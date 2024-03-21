@@ -1,0 +1,202 @@
+---
+title: "HW5.rmd"
+author: "Daniel Yoon"
+date: "2024-02-28"
+output:
+  html_document: default
+  pdf_document: default
+UT EID: dey246
+---
+https://github.com/eungiyoon/Homework
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+```
+
+## 1.
+
+```{r}
+# Given data
+total_trades <- 2021
+flagged_trades <- 70
+baseline_rate <- 0.024  # 2.4% converted to decimal
+
+# Null Hypothesis
+set.seed(123)  # Set seed for reproducibility
+null_hypothesis_samples <- rbinom(100000, total_trades, baseline_rate)
+
+# Test Statistic
+test_statistic <- null_hypothesis_samples
+
+
+# Calculate p-value
+p_value <- mean(test_statistic >= flagged_trades)
+
+# Plot the probability distribution of the test statistic
+hist(test_statistic, breaks = 50, freq = FALSE, col = 'green',main = 'Probability Distribution of Test Statistic under Null Hypothesis')
+abline(v = flagged_trades, col = 'red', lty = 2, lw = 2)
+
+
+#print p-value
+cat("P value:", p_value, "\n")
+#
+
+```
+The null hypothesis is the flagged trades from the Iron Bank have the same 2.4% baseline rate as that of other traders.The test statistic I used to measure evidence against the null hypothesis is Monte carlo simulation of number of flagged trades from Iron Bank over total number of trades from Iron bank.The shape of the plot is symmetric. The p-value is 0.00204, which is less than 0.05. Therefore, the p-value leads to rejecting the null hypothesis. indicating that the flagged trades from the Iron Bank are different from the baseline rate. 
+
+
+## 2. 
+```{r}
+#Parameters
+total_inspection <- 1500
+inspected_branch <- 50
+issue_rate <- 0.03
+observed_violations <-8
+
+# Null Hypothesis
+set.seed(123)  # Set seed for reproducibility
+
+#Monte Carlo simulation
+simulated_samples <- rbinom(100000, inspected_branch,issue_rate)
+
+# Calculate test statistic for each simulation
+test_statistics <- simulated_samples
+
+# Calculate p-value
+p_value <- mean(test_statistics >= observed_violations)
+
+# Plotting
+hist(test_statistics, breaks = 20, freq = FALSE, col = 'green', 
+     xlab = 'Number of Health Code Violations', ylab = 'Probability Density',
+     main = 'Distribution of Test Statistic')
+abline(v = observed_violations, col = 'red', lty = 2, lw = 2)
+
+# Print p-value
+cat("P-value:", p_value, "\n")
+
+
+
+
+```
+The null hypothesis of the local Health Department is that any action taken is based on solid evidence that Gourmet Bites' rate of health code violations is significantly higher than the citywide average of 3%. The test statistic I used to measure evidence is the number of violations out of the total inspections conducted at Gourmet Bites branches. The shape of the plot is right-skewed, and its p-value is 0.0013. P-value is less than 0.05, which means that it rejects the null hypothesis. It indicates that Gourmet Bites' rate of health code violations is not significantly higher than the citywide average of 3%.
+```{r}
+# Given data
+# read sentence
+sentences <- readLines("brown_sentences.txt")
+letter_frequencies <- read.csv("letter_frequencies.csv")
+
+# Remove non-letters and convert to uppercase
+clean_sentence <- gsub("[^A-Za-z]", "", sentences)
+clean_sentence <- toupper(clean_sentence)
+
+# Ensure letter frequencies are normalized and sum to 1
+letter_frequencies$Probability <- letter_frequencies$Probability / sum(letter_frequencies$Probability)
+
+# Count the occurrences of each letter in the sentence
+observed_counts <- table(factor(strsplit(clean_sentence, "")[[1]], levels = letter_frequencies$Letter))
+total_letters <- sum(observed_counts)
+expected_counts <- total_letters * letter_frequencies$Probability
+
+# Calculate chi-squared statistics
+chi_squared <- (observed_counts / expected_counts)^2 / expected_counts
+
+print(chi_squared)
+
+
+```
+
+```{r}
+sentences <- readLines("brown_sentences.txt")
+letter_frequencies <- read.csv("letter_frequencies.csv")
+
+
+# Assuming you have multiple sentences, loop over each sentence
+chi_squared_values <- numeric(length(sentences))  # Initialize vector to store chi-squared values
+
+for (i in seq_along(sentences)) {
+  # Remove non-letters and convert to uppercase for each sentence
+  clean_sentence <- toupper(gsub("[^A-Za-z]", "", sentences[i]))
+  
+  # Ensure letter frequencies are normalized and sum to 1
+  letter_frequencies$Probability <- letter_frequencies$Probability / sum(letter_frequencies$Probability)
+  
+  # Count the occurrences of each letter in the sentence
+  observed_counts <- table(factor(strsplit(clean_sentence, "")[[1]], levels = letter_frequencies$Letter))
+  
+  # Calculate total letters and expected counts
+  total_letters <- sum(observed_counts)
+  expected_counts <- total_letters * letter_frequencies$Probability
+  
+  # Calculate chi-squared value
+  chi_squared_values[i] <- sum((observed_counts - expected_counts)^2 / expected_counts)
+}
+
+# Plot histogram of chi-squared values
+hist(chi_squared_values, main = "Chi-Squared Distribution", xlab = "Chi-Squared Value", ylab = "Frequency")
+
+```
+
+p-value calculation = sum(x^2(samples)>=x^2)/length(x^2samples)
+
+```{r}
+# Define sentences and read letter frequencies
+sentences <- c(
+  "She opened the book and eagerly started the first chapter, anticipating what might come next.",
+  "Despite heavy rain, they opted for a long park walk, crossing the main avenue by the center fountain.",
+  "The museum’s new exhibit showcases ancient artifacts from various world civilizations.",
+  "He carefully examined the document, seeking clues to solve the mystery.",
+  "Students gathered in the auditorium for the guest speaker’s inspiring lecture.",
+  "After a challenging workday, she wished for a peaceful evening at home, relaxing after a quick dinner with some TV or a book about her upcoming Auckland visit.",
+  "The chef demonstrated preparing a delicious meal with locally sourced ingredients, emphasizing excellent dinner recipes from Spain.",
+  "They watched the sunset from the hilltop, marveling at the beautiful array of sky colors.",
+  "The committee reviewed the proposal, offering useful feedback to enhance the project’s effectiveness.",
+  "Despite project challenges, the team worked tirelessly, ensuring successful completion and a product exceeding expectations."
+)
+
+letter_frequencies <- read.csv("letter_frequencies.csv")
+
+# Function to calculate chi-squared value for a sentence
+calculate_chi_squared <- function(sentence, letter_frequencies) {
+  # Remove non-letters and convert to uppercase
+  clean_sentence <- toupper(gsub("[^A-Za-z]", "", sentence))
+  
+  # Normalize and sum to 1 for letter frequencies
+  letter_frequencies$Probability <- letter_frequencies$Probability / sum(letter_frequencies$Probability)
+  
+  # Count occurrences of each letter in the sentence
+  observed_counts <- table(factor(strsplit(clean_sentence, "")[[1]], levels = letter_frequencies$Letter))
+  
+  # Calculate total letters and expected counts
+  total_letters <- sum(observed_counts)
+  expected_counts <- total_letters * letter_frequencies$Probability
+  
+  # Calculate chi-squared value
+  chi_squared <- sum((observed_counts - expected_counts)^2 / expected_counts)
+  
+  return(chi_squared)
+}
+
+# Initialize vector for chi-squared values
+chi_squared_values <- numeric(length(sentences))
+
+# Loop over sentences to calculate chi-squared values
+for (i in seq_along(sentences)) {
+  chi_squared_values[i] <- calculate_chi_squared(sentences[i], letter_frequencies)
+}
+
+# Output chi-squared values for each sentence
+cat("Chi-Squared Values for Each Sentence:\n")
+print(chi_squared_values)
+
+thresholds <- c(22.930848, 13.051050, 46.285861, 23.546278, 23.676149, 96.452677, 28.271419, 9.635023, 44.928631, 49.960559)
+
+# Calculate and round proportions exceeding thresholds to three decimal places
+proportions <- round(sapply(thresholds, function(threshold) sum(1 * (chi_squared_values >= threshold)) / length(chi_squared_values)), 3)
+
+# Output rounded proportions
+print(proportions)
+
+
+
+```
