@@ -1,0 +1,151 @@
+---
+title: "HW 10"
+author: "Daniel Yoon"
+date: "2024-04-25"
+output:
+  pdf_document: default
+  html_document: default
+---
+HW 10
+Daniel Yoon
+UT EID: dey246
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+# Read the data
+redline <- read.csv("redlining.csv")
+
+#1) What question are you trying to answer?
+lm_redline <- lm(policies ~ minority + fire + age + income, data=redline)
+
+summary(lm_redline)
+
+confidence_intervals <- confint(lm_redline)
+
+print(confidence_intervals)
+```
+I used linear regression model to asnwer whether there is an association between the number of FAIR policies and the racial/ethic composition of a ZIP code, and I used p-values as my evidence. According to the summary of linear regression model, minority and fire have significant association with the number of FAIR policies because they had value of 0.00611 and 0.01833. However, age and income does not seem to have significant association because they had value of 0.14323 and 0.67863, which means that they failed to reject the null hypothesis. the 95% confidence interval of minority is 0.0025 to 0.0142, interval of fire is 0.0039 to 0.0396, interval of age is -0.002 to 0.0132,and interval of income is -0.0935 to 0.0616. In conclusion, minority and fire impacts people to take the FAIR policies rather than private market.
+```{r}
+# Problem 2
+# Part A
+library(dplyr)
+library(ggplot2)
+
+groceries <- read.csv("groceries.csv")
+
+# Aggregate data to calculate average price per store
+average_prices <- groceries %>%
+  group_by(Store) %>%
+  summarize(Avg_Price = mean(Price))
+
+# Plot the bar graph with coord_flip
+ggplot(average_prices, aes(x = Store, y = Avg_Price)) +
+  geom_bar(stat = "identity", fill = "blue") +
+  coord_flip() +
+  labs(title = "Average Price of Products Sold at Different Stores",
+       x = "Store",
+       y = "Average Price ($)",
+       caption = "Whole Foods has the highest average price of products sold.")
+
+  
+  theme_minimal()
+
+
+```
+
+
+```{r}
+# Part B
+# Load the required libraries
+library(dplyr)
+library(ggplot2)
+
+# Read the dataset
+groceries <- read.csv("groceries.csv")
+
+# Wrangle the data to count the number of stores selling each product
+product_counts <- groceries %>%
+  group_by(Product) %>%
+  summarize(Num_Stores = n_distinct(Store))
+
+# Plot the bar graph
+ggplot(product_counts, aes(x = Num_Stores, y = Product)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(title = "Number of Stores Selling Each Product",
+       x = "Number of Stores",
+       y = "Product") +
+  theme_minimal()
+
+
+
+```
+
+
+```{r}
+#Part C
+
+# Fit a linear regression model
+# Fit a regression model for Price versus Product and Type of store
+model <- lm(Price ~ Product + Type, data = groceries)
+
+
+# Get summary of the regression model
+summary_model <- summary(model)
+
+# Extract coefficient estimate and standard error for TypeConvenience
+coefficient <- coef(model)["TypeConvenience"]
+std_error <- summary_model$coefficients["TypeConvenience", "Std. Error"]
+
+# Calculate the degrees of freedom
+n <- length(your_data_frame$Price)
+p <- length(coef(model))
+df <- n - p
+
+# Calculate the t-statistic for a 95% confidence interval
+t_value <- qt(0.975, df)
+
+# Calculate the margin of error
+margin_error <- t_value * std_error
+
+# Calculate the confidence interval bounds
+lower_bound <- coefficient - margin_error
+upper_bound <- coefficient + margin_error
+
+# Round the bounds to two decimal places
+lower_bound <- round(lower_bound, 2)
+upper_bound <- round(upper_bound, 2)
+
+# Print the confidence interval
+cat("The 95% confidence interval for the difference in prices between convenience stores and ordinary grocery stores is between $", lower_bound, "and $", upper_bound, ".", sep = "")
+
+
+
+
+
+
+
+```
+
+```{r}
+# Fit a regression model for Price versus Product and Store
+model_store <- lm(Price ~ Product + Store, data = groceries)
+
+# Get summary of the regression model
+summary_model_store <- summary(model_store)
+
+# Extract coefficients for each store
+coefficients_store <- summary_model_store$coefficients["Store", "Estimate"]
+
+# Find the two stores with the lowest and highest prices
+lowest_prices <- head(sort(coefficients_store), 2)
+highest_prices <- tail(sort(coefficients_store), 2)
+
+# Print the results
+cat("The two stores charging the lowest prices are:", names(lowest_prices), "\n")
+cat("The two stores charging the highest prices are:", names(highest_prices), "\n")
+
+
+```
+
